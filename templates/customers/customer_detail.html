@@ -614,17 +614,15 @@
                     <h5>Basic Information</h5>
                     <ul class="basic-info">
                         <li>
-                            <span>
-<i class="feather-mail"></i>
-</span>
+                            <span><i class="feather-mail"></i></span>
                             <p><a href="mailto:{{ customer.email }}">{{ customer.email }}</a></p>
                         </li>
                         <li>
-                            <span><i class="la la-icons"></i></span>
+                            <span><i class="feather-phone"></i></span>
                             <p>{{ customer.phone }}</p>
                         </li>
                         <li>
-                            <span><i class="la la-map-marker"></i></span>
+                            <span><i class="la la-user-tie"></i></span>
                             <p>{{ customer.address }}, {{ customer.city }}, {{ customer.state|default:"" }} {{ customer.pincode }}, {{ customer.country }}</p>
                         </li>
                         <li>

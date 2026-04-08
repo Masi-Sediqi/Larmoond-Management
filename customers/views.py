@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
-from django.http import JsonResponse
-from .models import Customer, CustomerInteraction
-from .forms import CustomerForm, CustomerSearchForm, CustomerInteractionForm
+from django.db.models import Q, Sum
+from django.http import HttpResponse
+from .models import Customer, CustomerNote, CustomerActivity
+from .forms import CustomerForm, CustomerSearchForm, CustomerNoteForm
+import csv
 
 
 def customer_list(request):
@@ -37,64 +37,126 @@ def customer_list(request):
         if country:
             customers = customers.filter(country__icontains=country)
     
-    paginator = Paginator(customers, 20)
+    # Statistics
+    total_customers = customers.count()
+    active_customers = customers.filter(status='active').count()
+    total_revenue = customers.aggregate(total=Sum('total_spent'))['total'] or 0
+    
+    paginator = Paginator(customers, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
     context = {
         'customers': page_obj,
         'form': form,
-        'total_customers': customers.count(),
-        'active_customers': customers.filter(status='active').count(),
+        'total_customers': total_customers,
+        'active_customers': active_customers,
+        'total_revenue': total_revenue,
     }
     return render(request, 'customers/customer_list.html', context)
 
 
-
 def customer_detail(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
-    interactions = customer.interactions.all()[:10]
+    notes = customer.customer_notes.all()[:5]
+    activities = customer.activities.all()[:10]
     
     context = {
         'customer': customer,
-        'interactions': interactions,
+        'notes': notes,
+        'activities': activities,
     }
     return render(request, 'customers/customer_detail.html', context)
 
 
-
 def customer_create(request):
+    print("=" * 50)
+    print("CUSTOMER CREATE VIEW CALLED")
+    print(f"Request Method: {request.method}")
+    print("=" * 50)
+    
     if request.method == 'POST':
-        form = CustomerForm(request.POST)
+        print("\n--- PROCESSING POST REQUEST ---")
+        print(f"POST Data: {request.POST}")
+        
+        form = CustomerForm(request.POST, request.FILES)
+        
+        print("\n--- FORM DEBUG ---")
+        print(f"Is form bound: {form.is_bound}")
+        print(f"Form fields: {form.fields.keys()}")
+        print(f"Submitted data keys: {list(request.POST.keys())}")
+        
+        # Check each required field
+        required_fields = ['first_name', 'email', 'phone']
+        for field in required_fields:
+            if field in request.POST:
+                print(f"✓ {field}: {request.POST.get(field)}")
+            else:
+                print(f"✗ {field}: MISSING from POST data")
+        
         if form.is_valid():
-            customer = form.save(commit=False)
-            customer.created_by = request.user
-            customer.save()
-            messages.success(request, f'Customer {customer.customer_id} created successfully!')
-            return redirect('customers:customer_detail', pk=customer.pk)
+            print("\n✓ FORM IS VALID ✓")
+            print("Cleaned data:")
+            for field, value in form.cleaned_data.items():
+                print(f"  {field}: {value}")
+            
+            try:
+                customer = form.save()
+                
+                print(f"\n✓ Customer saved successfully!")
+                print(f"  Customer ID: {customer.customer_id}")
+                print(f"  Customer Name: {customer.get_full_name()}")
+                
+                # Log activity (removed created_by user reference)
+                CustomerActivity.objects.create(
+                    customer=customer,
+                    activity_type='note',
+                    description=f'Customer created successfully'
+                )
+                
+                print(f"✓ Activity logged")
+                messages.success(request, f'Customer {customer.customer_id} created successfully!')
+                print(f"✓ Redirecting to customer list")
+                return redirect('customers:customer_list')
+                
+            except Exception as e:
+                print(f"\n✗ ERROR SAVING CUSTOMER: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                messages.error(request, f'Error saving customer: {str(e)}')
+        else:
+            print("\n✗ FORM IS INVALID ✗")
+            print("Form errors:")
+            for field, errors in form.errors.items():
+                print(f"  {field}: {', '.join(errors)}")
+            
+            messages.error(request, 'Please correct the errors below.')
     else:
+        print("\n--- GET REQUEST ---")
+        print("Returning empty form")
         form = CustomerForm()
     
-    return render(request, 'customers/customer_form.html', {'form': form, 'title': 'Create Customer'})
-
+    print("\n--- RENDERING FORM TEMPLATE ---")
+    print(f"Template: customers/customer_form.html")
+    print(f"Title: Add New Contact")
+    print("=" * 50)
+    
+    return render(request, 'customers/customer_form.html', {'form': form, 'title': 'Add New Contact'})
 
 
 def customer_edit(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     
     if request.method == 'POST':
-        form = CustomerForm(request.POST, instance=customer)
+        form = CustomerForm(request.POST, request.FILES, instance=customer)
         if form.is_valid():
-            customer = form.save(commit=False)
-            customer.updated_by = request.user
-            customer.save()
+            customer = form.save()
             messages.success(request, f'Customer {customer.customer_id} updated successfully!')
-            return redirect('customers:customer_detail', pk=customer.pk)
+            return redirect('customers:customer_list')
     else:
         form = CustomerForm(instance=customer)
     
-    return render(request, 'customers/customer_form.html', {'form': form, 'title': 'Edit Customer', 'customer': customer})
-
+    return render(request, 'customers/customer_form.html', {'form': form, 'title': 'Edit Contact', 'customer': customer})
 
 
 def customer_delete(request, pk):
@@ -102,42 +164,68 @@ def customer_delete(request, pk):
     
     if request.method == 'POST':
         customer_id = customer.customer_id
+        customer_name = customer.get_full_name()
         customer.delete()
-        messages.success(request, f'Customer {customer_id} deleted successfully!')
+        messages.success(request, f'Customer {customer_id} - {customer_name} deleted successfully!')
         return redirect('customers:customer_list')
     
     return render(request, 'customers/customer_confirm_delete.html', {'customer': customer})
 
 
-
-def add_interaction(request, customer_pk):
-    customer = get_object_or_404(Customer, pk=customer_pk)
+def add_note(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
     
     if request.method == 'POST':
-        form = CustomerInteractionForm(request.POST)
+        form = CustomerNoteForm(request.POST, request.FILES)
         if form.is_valid():
-            interaction = form.save(commit=False)
-            interaction.customer = customer
-            interaction.handled_by = request.user
-            interaction.save()
-            messages.success(request, 'Interaction recorded successfully!')
+            note = form.save(commit=False)
+            note.customer = customer
+            note.save()
+            
+            messages.success(request, 'Note added successfully!')
             return redirect('customers:customer_detail', pk=customer.pk)
     else:
-        form = CustomerInteractionForm()
+        form = CustomerNoteForm()
     
-    return render(request, 'customers/add_interaction.html', {'form': form, 'customer': customer})
+    return render(request, 'customers/add_note.html', {'form': form, 'customer': customer})
 
 
-
-def toggle_customer_status(request, pk):
+def toggle_status(request, pk):
     if request.method == 'POST':
         customer = get_object_or_404(Customer, pk=pk)
-        if customer.status == 'active':
-            customer.status = 'inactive'
-        else:
-            customer.status = 'active'
+        old_status = customer.status
+        customer.status = 'inactive' if customer.status == 'active' else 'active'
         customer.save()
+        
+        CustomerActivity.objects.create(
+            customer=customer,
+            activity_type='status_change',
+            description=f'Status changed from {old_status} to {customer.status}'
+        )
+        
         messages.success(request, f'Customer status updated to {customer.get_status_display()}')
         return redirect('customers:customer_detail', pk=customer.pk)
     
     return redirect('customers:customer_list')
+
+
+def export_customers(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="customers.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['Customer ID', 'Name', 'Email', 'Phone', 'Country', 'Status', 'Total Spent'])
+    
+    customers = Customer.objects.all()
+    for customer in customers:
+        writer.writerow([
+            customer.customer_id,
+            customer.get_full_name(),
+            customer.email,
+            customer.phone,
+            customer.country,
+            customer.get_status_display(),
+            str(customer.total_spent),
+        ])
+    
+    return response

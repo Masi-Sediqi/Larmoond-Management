@@ -7,6 +7,7 @@ from .models import Customer, CustomerNote, CustomerActivity
 from .models import *
 from .forms import CustomerForm, CustomerSearchForm, CustomerNoteForm
 from .forms import *
+from projects.forms import *
 import csv
 
 
@@ -286,9 +287,10 @@ def project_list(request):
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
     payments = project.payments.all()
-    
+    task_form = ProjectTaskForm()
     context = {
         'project': project,
+        'task_form': task_form,
         'payments': payments,
     }
     return render(request, 'customers/project_detail.html', context)

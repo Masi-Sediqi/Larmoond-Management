@@ -70,6 +70,20 @@
                                 <label>End Date</label>
                                 {{ form.end_date }}
                             </div>
+                             <div class="mb-3">
+                                <div class="form-group">
+                                    <label>Project Members</label>
+                                    {{ form.project_members }}
+                                    <small class="text-muted">{{ form.project_members.help_text }}</small>
+                                </div>
+                            </div>
+                                   <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Project Manager</label>
+                                        {{ form.project_manager }}
+                                        <small class="text-muted">Select the team lead or project manager</small>
+                                    </div>
+                                </div>
                         </div>
                         
                         <div class="col-md-6">

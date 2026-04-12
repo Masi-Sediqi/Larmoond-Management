@@ -6,8 +6,12 @@ from .models import Income, Expense
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.db.models import Q, Sum
+from decimal import Decimal
+from django.db.models.functions import Coalesce
 
-# === د عاید لیدونه ===
+
+
+# === Income Views ===
 
 
 def income_list(request):
@@ -55,11 +59,11 @@ def income_create(request):
         form = IncomeForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'عاید په بریالیتوب سره ثبت شو!')
-            return redirect('finance/income_list')
+            messages.success(request, 'Income was saved successfully!')
+            return redirect('finance:income_list')
     else:
         form = IncomeForm()
-    return render(request, 'finance/income_form.html', {'form': form, 'title': 'نوی عاید'})
+    return render(request, 'finance/income_form.html', {'form': form, 'title': 'New Income'})
 
 def income_update(request, pk):
     income = get_object_or_404(Income, pk=pk)
@@ -67,11 +71,11 @@ def income_update(request, pk):
         form = IncomeForm(request.POST, instance=income)
         if form.is_valid():
             form.save()
-            messages.success(request, 'عاید په بریالیتوب سره سم شو!')
+            messages.success(request, 'Income was updated successfully!')
             return redirect('finance:income_list')
     else:
         form = IncomeForm(instance=income)
-    return render(request, 'finance/income_edit_form.html', {'form': form, 'title': 'عاید سمول'})
+    return render(request, 'finance/income_edit_form.html', {'form': form, 'title': 'Edit Income'})
 
 def income_delete(request, pk):
     income = get_object_or_404(Income, pk=pk)
@@ -80,10 +84,8 @@ def income_delete(request, pk):
 
 
 
-# === د لګښت لیدونه ===
-from django.http import JsonResponse
-from django.template.loader import render_to_string
-from django.db.models import Sum
+# === Expense Views ===
+
 
 def expense_list(request):
     expenses = Expense.objects.all().order_by('-date', '-id')
@@ -132,11 +134,11 @@ def expense_create(request):
         form = ExpenceForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'لګښت په بریالیتوب سره ثبت شو!')
+            messages.success(request, 'Expense was saved successfully!')
             return redirect('finance:expense_list')
     else:
         form = ExpenceForm()
-    return render(request, 'finance/expense_form.html', {'form': form, 'title': 'نوی لګښت'})
+    return render(request, 'finance/expense_form.html', {'form': form, 'title': 'New Expense'})
 
 def expense_update(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
@@ -144,41 +146,118 @@ def expense_update(request, pk):
         form = ExpenceForm(request.POST, instance=expense)
         if form.is_valid():
             form.save()
-            messages.success(request, 'لګښت په بریالیتوب سره سم شو!')
+            messages.success(request, 'Expense was updated successfully!')
             return redirect('finance:expense_list')
     else:
         form = ExpenceForm(instance=expense)
-    return render(request, 'finance/expense_edit_form.html', {'form': form, 'title': 'لګښت سمول'})
+    return render(request, 'finance/expense_edit_form.html', {'form': form, 'title': 'Edit Expense'})
 
 def expense_delete(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
     expense.delete()
     return redirect('finance:expense_list')
 
-# === ډشبورډ (د خپلواک لید) ===
-def dashboard(request):
-    # وروستي 5 عایدونه او لګښتونه
-    recent_incomes = Income.objects.all()[:5]
-    recent_expenses = Expense.objects.all()[:5]
+
+
+# # === Dashboard (Independent View) ===
+# def dashboard(request):
+#     # Latest 5 incomes and expenses
+#     recent_incomes = Income.objects.all()[:5]
+#     recent_expenses = Expense.objects.all()[:5]
     
-    # مجموعي عاید او لګښت په بیلابیلو اسعارو
-    total_income_afn = sum(i.amount for i in Income.objects.filter(currency='AFN'))
-    total_income_usd = sum(i.amount for i in Income.objects.filter(currency='USD'))
-    total_expense_afn = sum(e.amount for e in Expense.objects.filter(currency='AFN'))
-    total_expense_usd = sum(e.amount for e in Expense.objects.filter(currency='USD'))
+#     # Total income and expense in different currencies
+#     total_income_afn = sum(i.amount for i in Income.objects.filter(currency='AFN'))
+#     total_income_usd = sum(i.amount for i in Income.objects.filter(currency='USD'))
+#     total_expense_afn = sum(e.amount for e in Expense.objects.filter(currency='AFN'))
+#     total_expense_usd = sum(e.amount for e in Expense.objects.filter(currency='USD'))
     
-    # خالص عاید (په هر اسعار کې جلا)
-    net_afn = total_income_afn - total_expense_afn
-    net_usd = total_income_usd - total_expense_usd
+#     # Net income (separately for each currency)
+#     net_afn = total_income_afn - total_expense_afn
+#     net_usd = total_income_usd - total_expense_usd
     
+#     context = {
+#         'recent_incomes': recent_incomes,
+#         'recent_expenses': recent_expenses,
+#         'total_income_afn': total_income_afn,
+#         'total_income_usd': total_income_usd,
+#         'total_expense_afn': total_expense_afn,
+#         'total_expense_usd': total_expense_usd,
+#         'net_afn': net_afn,
+#         'net_usd': net_usd,
+#     }
+#     return render(request, 'dashboard.html', context)
+
+
+
+
+
+def finance_dashboard(request):
+    incomes = Income.objects.all().order_by('-date', '-id')
+    expenses = Expense.objects.all().order_by('-date', '-id')
+
+    # AFN
+    total_income_afn = Income.objects.filter(currency='AFN').aggregate(
+        total=Coalesce(Sum('amount'), Decimal('0.00'))
+    )['total']
+
+    total_expense_afn = Expense.objects.filter(currency='AFN').aggregate(
+        total=Coalesce(Sum('amount'), Decimal('0.00'))
+    )['total']
+
+    balance_afn = total_income_afn - total_expense_afn
+
+    # USD
+    total_income_usd = Income.objects.filter(currency='USD').aggregate(
+        total=Coalesce(Sum('amount'), Decimal('0.00'))
+    )['total']
+
+    total_expense_usd = Expense.objects.filter(currency='USD').aggregate(
+        total=Coalesce(Sum('amount'), Decimal('0.00'))
+    )['total']
+
+    balance_usd = total_income_usd - total_expense_usd
+
+    # latest records
+    latest_incomes = incomes[:5]
+    latest_expenses = expenses[:5]
+
+    # status
+    if balance_afn > 0:
+        afn_status = 'profit'
+        afn_status_text = 'You are in profit (AFN)'
+    elif balance_afn < 0:
+        afn_status = 'loss'
+        afn_status_text = 'You are in loss (AFN)'
+    else:
+        afn_status = 'equal'
+        afn_status_text = 'Income and expense are equal (AFN)'
+
+    if balance_usd > 0:
+        usd_status = 'profit'
+        usd_status_text = 'You are in profit (USD)'
+    elif balance_usd < 0:
+        usd_status = 'loss'
+        usd_status_text = 'You are in loss (USD)'
+    else:
+        usd_status = 'equal'
+        usd_status_text = 'Income and expense are equal (USD)'
+
     context = {
-        'recent_incomes': recent_incomes,
-        'recent_expenses': recent_expenses,
         'total_income_afn': total_income_afn,
-        'total_income_usd': total_income_usd,
         'total_expense_afn': total_expense_afn,
+        'balance_afn': balance_afn,
+
+        'total_income_usd': total_income_usd,
         'total_expense_usd': total_expense_usd,
-        'net_afn': net_afn,
-        'net_usd': net_usd,
+        'balance_usd': balance_usd,
+
+        'latest_incomes': latest_incomes,
+        'latest_expenses': latest_expenses,
+
+        'afn_status': afn_status,
+        'afn_status_text': afn_status_text,
+
+        'usd_status': usd_status,
+        'usd_status_text': usd_status_text,
     }
-    return render(request, 'dashboard.html', context)
+    return render(request, 'finance/dashboard.html', context)

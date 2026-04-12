@@ -1,14 +1,26 @@
 from django import forms
 from .models import *
 from django.core.exceptions import ValidationError
+from django import forms
+from .models import Income, Expense
+from jalali_date.fields import JalaliDateField
+from jalali_date.widgets import AdminJalaliDateWidget
+
+from django import forms
+from .models import Income
 
 
 class IncomeForm(forms.ModelForm):
-    
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date'
+        })
+    )
 
     class Meta:
         model = Income
-        fields = ["title", "source", "amount", "currency","date","note"]
+        fields = ["title", "source", "amount", "currency", "date", "note"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -21,25 +33,29 @@ class IncomeForm(forms.ModelForm):
             "class": "form-select"
         })
         self.fields["amount"].widget.attrs.update({
-            "class": "form-select"
+            "class": "form-control",
+            "step": "0.01"
         })
         self.fields["currency"].widget.attrs.update({
             "class": "form-select"
         })
-        self.fields["date"].widget.attrs.update({
-            "class": "form-select"
-        })
         self.fields["note"].widget.attrs.update({
-            "class": "form-select"
+            "class": "form-control",
+            "rows": "3"
         })
-       
-       
+
 
 class ExpenceForm(forms.ModelForm):
-    
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date'
+        })
+    )
+
     class Meta:
         model = Expense
-        fields = ["title", "category", "amount", "currency","date","note"]
+        fields = ["title", "category", "amount", "currency", "date", "note"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -52,15 +68,13 @@ class ExpenceForm(forms.ModelForm):
             "class": "form-select"
         })
         self.fields["amount"].widget.attrs.update({
-            "class": "form-select"
+            "class": "form-control",
+            "step": "0.01"
         })
         self.fields["currency"].widget.attrs.update({
             "class": "form-select"
         })
-        self.fields["date"].widget.attrs.update({
-            "class": "form-select"
-        })
         self.fields["note"].widget.attrs.update({
-            "class": "form-select"
+            "class": "form-control",
+            "rows": "3"
         })
-       

@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.border-left-success {
+    border-left: 4px solid #28a745;
+}
+.border-left-danger {
+    border-left: 4px solid #dc3545;
+}
+.border-left-primary {
+    border-left: 4px solid #007bff;
+}
+</style>
+
+<div class="page-wrapper">
+    <div class="content container-fluid">
+
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h3 class="page-title">Finance Dashboard</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- AFN Summary -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border-left-success">
+                    <div class="card-body">
+                        <h5>Total Income (AFN)</h5>
+                        <h3 class="text-success">{{ total_income_afn }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-left-danger">
+                    <div class="card-body">
+                        <h5>Total Expense (AFN)</h5>
+                        <h3 class="text-danger">{{ total_expense_afn }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-left-primary">
+                    <div class="card-body">
+                        <h5>Balance (AFN)</h5>
+                        <h3 class="{% if balance_afn > 0 %}text-success{% elif balance_afn < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                            {{ balance_afn }}
+                        </h3>
+                        <p class="mb-0">{{ afn_status_text }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- USD Summary -->
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="card border-left-success">
+                    <div class="card-body">
+                        <h5>Total Income (USD)</h5>
+                        <h3 class="text-success">{{ total_income_usd }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-left-danger">
+                    <div class="card-body">
+                        <h5>Total Expense (USD)</h5>
+                        <h3 class="text-danger">{{ total_expense_usd }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-left-primary">
+                    <div class="card-body">
+                        <h5>Balance (USD)</h5>
+                        <h3 class="{% if balance_usd > 0 %}text-success{% elif balance_usd < 0 %}text-danger{% else %}text-secondary{% endif %}">
+                            {{ balance_usd }}
+                        </h3>
+                        <p class="mb-0">{{ usd_status_text }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Boxes -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>AFN Analysis</h5>
+                        {% if balance_afn > 0 %}
+                            <div class="alert alert-success mb-0">
+                                You are in profit in AFN.
+                            </div>
+                        {% elif balance_afn < 0 %}
+                            <div class="alert alert-danger mb-0">
+                                You are in loss in AFN.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-secondary mb-0">
+                                Income and expense are equal in AFN.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>USD Analysis</h5>
+                        {% if balance_usd > 0 %}
+                            <div class="alert alert-success mb-0">
+                                You are in profit in USD.
+                            </div>
+                        {% elif balance_usd < 0 %}
+                            <div class="alert alert-danger mb-0">
+                                You are in loss in USD.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-secondary mb-0">
+                                Income and expense are equal in USD.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Income -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Latest Incomes</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Title</th>
+                                <th>Source</th>
+                                <th>Amount</th>
+                                <th>Currency</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in latest_incomes %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.title }}</td>
+                                <td>{{ item.get_source_display }}</td>
+                                <td>{{ item.amount }}</td>
+                                <td>{{ item.currency }}</td>
+                                <td>{{ item.date }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No income records found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Expense -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Latest Expenses</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Currency</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in latest_expenses %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.title }}</td>
+                                <td>{{ item.get_category_display }}</td>
+                                <td>{{ item.amount }}</td>
+                                <td>{{ item.currency }}</td>
+                                <td>{{ item.date }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No expense records found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

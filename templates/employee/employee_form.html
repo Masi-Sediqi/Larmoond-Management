@@ -44,6 +44,45 @@
                     <a href="#" class="btn btn-success w-100"> Search </a>
                 </div>
             </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="dropdown w-100">
+                    <button class="btn btn-success dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                        Actions
+                    </button>
+
+                    <ul class="dropdown-menu w-100">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'employee:create_monthly_payroll' %}">
+                                <i class="fa-solid fa-money-bill-wave me-2 text-success"></i>
+                                Create Payroll
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fa-solid fa-user-check me-2 text-primary"></i>
+                                Attendance
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fa-solid fa-scale-balanced me-2 text-warning"></i>
+                                Rewards & Penalties
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <style>.dropdown-menu .dropdown-item {
+                transition: 0.2s ease;
+            }
+
+            .dropdown-menu .dropdown-item:hover {
+                background: rgba(0, 123, 255, 0.08);
+                transform: translateX(5px);
+            }
+            </style>
         </div>
 
         <div class="row staff-grid-row">

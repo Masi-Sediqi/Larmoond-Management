@@ -1,5 +1,5 @@
 from django import forms
-from .models import Employee
+from .models import *
 
 
 class EmployeeForm(forms.ModelForm):
@@ -29,3 +29,38 @@ class EmployeeForm(forms.ModelForm):
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
+
+class EmployeeLeaveAbsenceForm(forms.ModelForm):
+    class Meta:
+        model = EmployeeLeaveAbsence
+        fields = [
+            'record_type',
+            'unit',
+            'from_date',
+            'to_date',
+            'hours',
+            'reason',
+        ]
+        widgets = {
+            'record_type': forms.Select(attrs={'class': 'form-select'}),
+            'unit': forms.Select(attrs={'class': 'form-select'}),
+            'from_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'to_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'hours': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.5'}),
+            'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
+
+
+class EmployeePayrollCreateForm(forms.Form):
+    title = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3})
+    )

@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+
+<div class="page-wrapper">
+
+    <div class="content container-fluid">
+
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h3 class="page-title">Leaves</h3>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="admin-dashboard.html">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Leaves</li>
+                    </ul>
+                </div>
+                <div class="col-auto float-end ms-auto">
+                    <a href="#" class="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_leave"><i
+                            class="fa-solid fa-plus"></i> Add Leave</a>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stats-info">
+                    <h6>Annual Leave</h6>
+                    <h4>12</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-info">
+                    <h6>Medical Leave</h6>
+                    <h4>3</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-info">
+                    <h6>Other Leave</h6>
+                    <h4>4</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-info">
+                    <h6>Remaining Leave</h6>
+                    <h4>5</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-striped custom-table leave-employee-table mb-0 datatable">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Unit</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>No of Days</th>
+                                <th>Hours</th>
+                                <th>Reason</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in records %}
+                                <tr>
+                                    <td>{{ rec.get_record_type_display }}</td>
+                                    <td>{{ rec.get_unit_display }}</td>
+                                    <td>{{ rec.from_date }}</td>
+                                    <td>{{ rec.to_date|default:"-" }}</td>
+                                    <td>{{ rec.number_of_days }}</td>
+                                    <td>{{ rec.number_of_hours }}</td>
+                                    <td>{{ rec.reason|default:"-" }}</td>
+                                    <td class="text-end">
+                                        <div class="dropdown dropdown-action">
+                                            <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="material-icons">more_vert</i>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right">
+                                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#edit_leave{{ rec.id }}">
+                                                    <i class="fa-solid fa-pencil m-r-5"></i> Edit
+                                                </a>
+                                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_leave{{ rec.id }}">
+                                                    <i class="fa-regular fa-trash-can m-r-5"></i> Delete
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Edit Modal -->
+                                <div id="edit_leave{{ rec.id }}" class="modal custom-modal fade" role="dialog">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Edit Leave</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+
+                                            <div class="modal-body">
+                                                <form method="POST" action="{% url 'employee:leave_absence_update' rec.id %}">
+                                                    {% csrf_token %}
+
+                                                    <div class="input-block mb-3">
+                                                        <label class="col-form-label">Record Type</label>
+                                                        <select name="record_type" class="form-select">
+                                                            <option value="leave" {% if rec.record_type == 'leave' %}selected{% endif %}>رخصتی</option>
+                                                            <option value="absent" {% if rec.record_type == 'absent' %}selected{% endif %}>غیرحاضری</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="input-block mb-3">
+                                                        <label class="col-form-label">Unit</label>
+                                                        <select name="unit" class="form-select">
+                                                            <option value="day" {% if rec.unit == 'day' %}selected{% endif %}>روز</option>
+                                                            <option value="hour" {% if rec.unit == 'hour' %}selected{% endif %}>ساعت</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="input-block mb-3">
+                                                        <label class="col-form-label">From</label>
+                                                        <input class="form-control" type="date" name="from_date" value="{{ rec.from_date|date:'Y-m-d' }}">
+                                                    </div>
+
+                                                    <div class="input-block mb-3">
+                                                        <label class="col-form-label">To</label>
+                                                        <input class="form-control" type="date" name="to_date" value="{{ rec.to_date|date:'Y-m-d' }}">
+                                                    </div>
+
+                                                    <div class="input-block mb-3">
+                                                        <label class="col-form-label">Hours</label>
+                                                        <input class="form-control" type="number" step="0.5" name="hours" value="{{ rec.hours }}">
+                                                    </div>
+
+                                                    <div class="input-block mb-3">
+                                                        <label class="col-form-label">Reason</label>
+                                                        <textarea rows="4" class="form-control" name="reason">{{ rec.reason }}</textarea>
+                                                    </div>
+
+                                                    <div class="submit-section">
+                                                        <button class="btn btn-primary submit-btn" type="submit">Save</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Delete Modal -->
+                                <div class="modal custom-modal fade" id="delete_leave{{ rec.id }}" role="dialog">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-body">
+                                                <div class="form-header">
+                                                    <h3>Delete Leave</h3>
+                                                    <p>Are you sure want to delete this record?</p>
+                                                </div>
+                                                <div class="modal-btn delete-action">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <form method="POST" action="{% url 'employee:leave_absence_delete' rec.id %}">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-primary continue-btn w-100">Delete</button>
+                                                            </form>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <button type="button" data-bs-dismiss="modal" class="btn btn-primary cancel-btn w-100">Cancel</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center text-muted">No leave/absence records found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="add_leave" class="modal custom-modal fade" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Leave / Absence</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'employee:leave_absence_create' employee.id %}">
+                        {% csrf_token %}
+
+                        <div class="input-block mb-3">
+                            <label class="col-form-label">Record Type</label>
+                            {{ form.record_type }}
+                        </div>
+
+                        <div class="input-block mb-3">
+                            <label class="col-form-label">Unit</label>
+                            {{ form.unit }}
+                        </div>
+
+                        <div class="input-block mb-3" id="fromDateField">
+                            <label class="col-form-label">From</label>
+                            {{ form.from_date }}
+                        </div>
+
+                        <div class="input-block mb-3" id="toDateField">
+                            <label class="col-form-label">To</label>
+                            {{ form.to_date }}
+                        </div>
+
+                        <div class="input-block mb-3" id="hoursField">
+                            <label class="col-form-label">Hours</label>
+                            {{ form.hours }}
+                            <small class="text-muted">اگر ثبت ساعتی باشد، این فیلد را پر کن</small>
+                        </div>
+                        <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+
+                            const unitField = document.querySelector('[name="unit"]');
+                            const toDateField = document.getElementById("toDateField");
+                            const hoursField = document.getElementById("hoursField");
+
+                            function toggleFields() {
+                                if (unitField.value === "hour") {
+                                    // 👉 حالت ساعتی
+                                    toDateField.style.display = "none";
+                                    hoursField.style.display = "block";
+                                } else {
+                                    // 👉 حالت روزانه
+                                    toDateField.style.display = "block";
+                                    hoursField.style.display = "none";
+                                }
+                            }
+
+                            // اجرا در شروع
+                            toggleFields();
+
+                            // اجرا هنگام تغییر
+                            unitField.addEventListener("change", toggleFields);
+                        });
+                        </script>
+
+                        <div class="input-block mb-3">
+                            <label class="col-form-label">Reason</label>
+                            {{ form.reason }}
+                        </div>
+
+                        <div class="submit-section">
+                            <button class="btn btn-primary submit-btn" type="submit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

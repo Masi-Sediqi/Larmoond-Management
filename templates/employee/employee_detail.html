@@ -9,8 +9,8 @@
                 <div class="col-sm-12">
                     <h3 class="page-title">Profile</h3>
                     <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{% url 'employees:employee_list' %}">Employees</a></li>
+                        <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="">Employees</a></li>
                         <li class="breadcrumb-item active">{{ employee.full_name }}'s Profile</li>
                     </ul>
                 </div>
@@ -105,29 +105,28 @@
             </div>
         </div>
 
-        <!-- Statistics Cards -->
+        <!-- Action Buttons Section -->
         <div class="row mt-3">
-            <div class="col-md-4">
+            <div class="col-12">
                 <div class="card">
-                    <div class="card-body text-center">
-                        <h3 class="mb-0">{{ total_projects|default:0 }}</h3>
-                        <p class="text-muted mb-0">Total Projects</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h3 class="mb-0">{{ active_projects|default:0 }}</h3>
-                        <p class="text-muted mb-0">Active Projects</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h3 class="mb-0">{{ completed_projects|default:0 }}</h3>
-                        <p class="text-muted mb-0">Completed Projects</p>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4 col-sm-12 mb-2 mb-md-0">
+                                <a href="{% url 'employee:leave_absence_create' employee.id %}" class="btn btn-primary btn-lg w-100">
+                                    <i class="fa-solid fa-calendar-alt"></i> Leave Request
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-sm-12 mb-2 mb-md-0">
+                                <a href="#" class="btn btn-success btn-lg w-100" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                                    <i class="fa-solid fa-money-bill-wave"></i> Payment Info
+                                </a>
+                            </div>
+                            <div class="col-md-4 col-sm-12 mb-2 mb-md-0">
+                                <a href="#" class="btn btn-info btn-lg w-100" data-bs-toggle="modal" data-bs-target="#attendanceModal">
+                                    <i class="fa-solid fa-clock"></i> Bonus & Penalty
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -344,6 +343,7 @@
     </div>
 </div>
 
+
 <!-- Edit Profile Modal -->
 <div class="modal fade" id="profile_info" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -352,7 +352,7 @@
                 <h5 class="modal-title">Edit Profile</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{% url 'employees:employee_edit' employee.id %}" enctype="multipart/form-data">
+            <form method="POST" action="" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="row">
@@ -495,6 +495,10 @@
 .material-icons {
     font-size: 20px;
 }
+.btn-lg {
+    padding: 12px 20px;
+    font-size: 16px;
+}
 </style>
 
 <script>
@@ -503,6 +507,36 @@ var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggl
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl)
 })
+
+// Update current time for attendance
+function updateTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString();
+    const dateString = now.toLocaleDateString();
+    if (document.getElementById('currentTime')) {
+        document.getElementById('currentTime').innerHTML = `${dateString}<br><small>${timeString}</small>`;
+    }
+    if (document.getElementById('currentTime2')) {
+        document.getElementById('currentTime2').innerHTML = `${dateString}<br><small>${timeString}</small>`;
+    }
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// Show attendance sections
+function showAttendance(section) {
+    document.getElementById('check_in_section').style.display = 'none';
+    document.getElementById('check_out_section').style.display = 'none';
+    document.getElementById('history_section').style.display = 'none';
+    
+    if (section === 'check_in') {
+        document.getElementById('check_in_section').style.display = 'block';
+    } else if (section === 'check_out') {
+        document.getElementById('check_out_section').style.display = 'block';
+    } else if (section === 'history') {
+        document.getElementById('history_section').style.display = 'block';
+    }
+}
 </script>
 
 {% endblock %}

@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'home',
     'finance',
     'customers',
-    'jalali_date',
     'projects',
+    'employee'
 ]
 
 MIDDLEWARE = [

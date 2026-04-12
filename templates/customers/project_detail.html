@@ -438,8 +438,8 @@
                     </ul>
                 </div>
                 <div class="col-auto float-end ms-auto">
-                    <a href="{% url 'customers:project_edit' project.pk %}" class="btn add-btn">
-                        <i class="fa-solid fa-pencil"></i> Edit Project
+                    <a href="{% url 'projects:task_create' project.id %}" class="btn add-btn mr-2">
+                        <i class="fa-solid fa-pencil"></i> Tasks
                     </a>
                     <a href="{% url 'customers:add_payment' project.pk %}" class="btn btn-white">
                         <i class="fa-solid fa-plus"></i> Add Payment
@@ -599,7 +599,76 @@
         </div>
     </div>
 </div>
+    <div id="add_task" class="modal custom-modal fade" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
 
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'projects:task_create' project.id %}">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Task Title</label>
+                                    {{ task_form.title }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Assigned To</label>
+                                    {{ task_form.assigned_to }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Status</label>
+                                    {{ task_form.status }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Priority</label>
+                                    {{ task_form.priority }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Start Date</label>
+                                    {{ task_form.start_date }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Deadline</label>
+                                    {{ task_form.deadline }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="input-block mb-3">
+                            <label class="col-form-label">Description</label>
+                            {{ task_form.description }}
+                        </div>
+
+                        <div class="submit-section">
+                            <button class="btn btn-primary submit-btn" type="submit">Save Task</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 <!-- Add Payment Modal -->
 <div class="modal custom-modal fade" id="addPaymentModal" role="dialog">
     <div class="modal-dialog modal-dialog-centered">

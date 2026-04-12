@@ -68,14 +68,16 @@ class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = [
-            'project_name', 'customer', 'description',
+            'project_name', 'customer', 'description','project_members','project_manager',
             'total_price', 'paid_amount', 'start_date', 'end_date',
             'status', 'priority', 'progress_percentage', 'notes'
         ]
         widgets = {
             'project_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter project name'}),
             'customer': forms.Select(attrs={'class': 'form-select'}),
+            'project_manager': forms.Select(attrs={'class': 'form-select'}),
             'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Project description'}),
+            'project_members': forms.SelectMultiple(attrs={'class': 'form-select', 'size': 5}),
             'total_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'paid_amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -92,6 +94,16 @@ class ProjectForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if field.widget.__class__.__name__ not in ['Select', 'Textarea']:
                 field.widget.attrs['class'] = 'form-control'
+        
+        # Filter only active employees
+        self.fields['project_members'].queryset = Employee.objects.filter(is_active=True)  
+        # Add help texts
+        self.fields['project_members'].help_text = "Hold Ctrl to select multiple members"
+        
+        # Add CSS classes to all fields
+        for field_name, field in self.fields.items():
+            if field.widget.__class__.__name__ not in ['Select', 'SelectMultiple', 'Textarea']:
+                field.widget.attrs['class'] = 'form-control'
     
     def clean(self):
         cleaned_data = super().clean()
@@ -102,7 +114,7 @@ class ProjectForm(forms.ModelForm):
             raise ValidationError('Paid amount cannot be greater than total price.')
         
         return cleaned_data
-
+    
 
 class PaymentForm(forms.ModelForm):
     class Meta:

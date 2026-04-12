@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from employee.models import Employee
 
 class Customer(models.Model):
     # Customer Type Choices
@@ -124,8 +125,6 @@ class CustomerActivity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-
-
 class Project(models.Model):
     # Project Status Choices
     STATUS_CHOICES = [
@@ -148,7 +147,21 @@ class Project(models.Model):
     project_name = models.CharField(max_length=200)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='projects')
     description = models.TextField(blank=True, null=True)
-    
+    # Project Members (Many-to-Many with Employee)
+    project_members = models.ManyToManyField(
+        Employee, 
+        related_name='assigned_projects',
+        blank=True,
+        help_text="Select team members assigned to this project"
+    )
+    project_manager = models.ForeignKey(
+        Employee,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='managed_projects',
+        help_text="Project manager or team lead"
+    )
     # Financial Information
     total_price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)

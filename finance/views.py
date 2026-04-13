@@ -462,3 +462,62 @@ def expense_print(request):
         'to_date': to_date,
     }
     return render(request, 'finance/expense_print.html', context)
+
+
+def finance_dashboard_print(request):
+    incomes = Income.objects.select_related('source').all().order_by('-date', '-id')
+    expenses = Expense.objects.select_related('category').all().order_by('-date', '-id')
+
+    total_income_afn = Income.objects.filter(currency='AFN').aggregate(
+        total=Coalesce(Sum('amount'), Decimal('0.00'))
+    )['total']
+
+    total_expense_afn = Expense.objects.filter(currency='AFN').aggregate(
+        total=Coalesce(Sum('amount'), Decimal('0.00'))
+    )['total']
+
+    balance_afn = total_income_afn - total_expense_afn
+
+    total_income_usd = Income.objects.filter(currency='USD').aggregate(
+        total=Coalesce(Sum('amount'), Decimal('0.00'))
+    )['total']
+
+    total_expense_usd = Expense.objects.filter(currency='USD').aggregate(
+        total=Coalesce(Sum('amount'), Decimal('0.00'))
+    )['total']
+
+    balance_usd = total_income_usd - total_expense_usd
+
+    latest_incomes = incomes[:10]
+    latest_expenses = expenses[:10]
+
+    if balance_afn > 0:
+        afn_status_text = 'You are in profit (AFN)'
+    elif balance_afn < 0:
+        afn_status_text = 'You are in loss (AFN)'
+    else:
+        afn_status_text = 'Income and expense are equal (AFN)'
+
+    if balance_usd > 0:
+        usd_status_text = 'You are in profit (USD)'
+    elif balance_usd < 0:
+        usd_status_text = 'You are in loss (USD)'
+    else:
+        usd_status_text = 'Income and expense are equal (USD)'
+
+    context = {
+        'total_income_afn': total_income_afn,
+        'total_expense_afn': total_expense_afn,
+        'balance_afn': balance_afn,
+
+        'total_income_usd': total_income_usd,
+        'total_expense_usd': total_expense_usd,
+        'balance_usd': balance_usd,
+
+        'latest_incomes': latest_incomes,
+        'latest_expenses': latest_expenses,
+
+        'afn_status_text': afn_status_text,
+        'usd_status_text': usd_status_text,
+    }
+    return render(request, 'finance/dashboard_print.html', context)

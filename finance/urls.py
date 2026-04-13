@@ -20,6 +20,7 @@ urlpatterns = [
     path('finance/dashboard/', views.finance_dashboard, name='dashboard'),
     path('income/print/', views.income_print, name='income_print'),
     path('expense/print/', views.expense_print, name='expense_print'),
+    path('dashboard/print/', views.finance_dashboard_print, name='dashboard_print'),
 
     # income sources
     path('income-sources/', views.income_source_list, name='income_source_list'),

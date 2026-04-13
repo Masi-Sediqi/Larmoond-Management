@@ -1,0 +1,32 @@
+{% for server in servers %}
+<tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ server.server_name }}</td>
+    <td>
+        {% if server.status == 'active' %}
+            <span class="badge bg-success">Active</span>
+        {% else %}
+            <span class="badge bg-danger">Inactive</span>
+        {% endif %}
+    </td>
+    <td>{{ server.price }}</td>
+    <td>{{ server.start_date }}</td>
+    <td>{{ server.end_date }}</td>
+    <td>{{ server.cpu_cores }}</td>
+    <td>{{ server.ram_gb }} GB</td>
+    <td>{{ server.storage_gb }} GB</td>
+    <td>{{ server.bandwidth_tb }} TB</td>
+    <td>{{ server.ip_address|default:"-" }}</td>
+    <td>{{ server.provider|default:"-" }}</td>
+    <td>{{ server.operating_system|default:"-" }}</td>
+    <td>{{ server.notes|default:"-"|truncatechars:30 }}</td>
+    <td>
+        <a href="{% url 'hosting:server_update' server.id %}" class="btn btn-sm btn-warning">Edit</a>
+        <a href="{% url 'hosting:server_delete' server.id %}" class="btn btn-sm btn-danger">Delete</a>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="15" class="text-center">No servers found.</td>
+</tr>
+{% endfor %}

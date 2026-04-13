@@ -758,6 +758,15 @@
                         <li><a href="{% url 'finance:expense_list' %}">Expense</a></li>
                     </ul>
                 </li>
+                <li class="submenu">
+                    <a href="#"><i class="la la-rocket"></i> <span>Hosting</span> <span class="menu-arrow"></span></a>
+                    <ul>
+                        <!-- <li><a href="{% url 'finance:dashboard' %}">Dashboard</a></li> -->
+                        <li><a href="{% url 'hosting:server_list' %}">Server</a></li>
+                        <!-- <li><a href="tasks.html">Tasks</a></li> -->
+                        <li><a href="{% url 'hosting:domain_list' %}">Domain</a></li>
+                    </ul>
+                </li>
                 <!-- <li>
                     <a href="{% url 'finance:income_list' %}"><i class="la la-building"></i> <span> Income </span></a>
                 </li>

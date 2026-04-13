@@ -1,0 +1,28 @@
+{% for domain in domains %}
+<tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ domain.domain_name }}</td>
+    <td>{{ domain.client|default:"-" }}</td>
+    <td>{{ domain.price }}</td>
+    <td>
+        {% if domain.status == 'active' %}
+            <span class="badge bg-success">Active</span>
+        {% else %}
+            <span class="badge bg-danger">Inactive</span>
+        {% endif %}
+    </td>
+    <td>{{ domain.start_date }}</td>
+    <td>{{ domain.end_date }}</td>
+    <td>{{ domain.registrar|default:"-" }}</td>
+    <td>{{ domain.dns_provider|default:"-" }}</td>
+    <td>{{ domain.notes|default:"-"|truncatechars:30 }}</td>
+    <td>
+        <a href="{% url 'hosting:domain_update' domain.id %}" class="btn btn-sm btn-warning">Edit</a>
+        <a href="{% url 'hosting:domain_delete' domain.id %}" class="btn btn-sm btn-danger">Delete</a>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="11" class="text-center">No domains found.</td>
+</tr>
+{% endfor %}

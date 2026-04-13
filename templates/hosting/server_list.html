@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="page-wrapper">
+    <div class="content container-fluid">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h3 class="page-title">Server</h3>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="{% url 'hosting:server_create' %}" class="btn btn-primary">Add Server</a>
+                </div>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="message-container">
+            {% for message in messages %}
+                <div class="custom-message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Total Servers</h5>
+                        <h3 id="total-servers">{{ total_servers }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Active Servers</h5>
+                        <h3 id="active-servers">{{ active_servers }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Inactive Servers</h5>
+                        <h3 id="inactive-servers">{{ inactive_servers }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row">
+
+                    <div class="col-md-3">
+                        <input type="text" id="search" class="form-control" placeholder="Search server name...">
+                    </div>
+
+                    <div class="col-md-2">
+                        <select id="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <input type="text" id="provider" class="form-control" placeholder="Provider...">
+                    </div>
+
+                    <div class="col-md-2">
+                        <input type="date" id="from_date" class="form-control">
+                    </div>
+
+                    <div class="col-md-2">
+                        <input type="date" id="to_date" class="form-control">
+                    </div>
+
+                    <div class="col-md-1">
+                        <a id="print-link" href="{% url 'hosting:server_list' %}" target="_blank" class="btn btn-dark w-100">
+                            🖨️
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Server List</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Server Name</th>
+                                <th>Status</th>
+                                <th>Price</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>CPU</th>
+                                <th>RAM</th>
+                                <th>Storage</th>
+                                <th>Bandwidth</th>
+                                <th>IP Address</th>
+                                <th>Provider</th>
+                                <th>Operating System</th>
+                                <th>Note</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            {% include 'hosting/search_server.html' %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fetchData() {
+    let search = document.getElementById('search').value;
+    let status = document.getElementById('status').value;
+    let provider = document.getElementById('provider').value;
+    let from_date = document.getElementById('from_date').value;
+    let to_date = document.getElementById('to_date').value;
+
+    fetch(`?search=${search}&status=${status}&provider=${provider}&from_date=${from_date}&to_date=${to_date}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('table-body').innerHTML = data.html;
+
+        if (document.getElementById('total-servers')) {
+            document.getElementById('total-servers').innerText = data.total_servers;
+        }
+        if (document.getElementById('active-servers')) {
+            document.getElementById('active-servers').innerText = data.active_servers;
+        }
+        if (document.getElementById('inactive-servers')) {
+            document.getElementById('inactive-servers').innerText = data.inactive_servers;
+        }
+    });
+}
+
+document.querySelectorAll('#search, #status, #provider, #from_date, #to_date')
+.forEach(el => {
+    el.addEventListener('keyup', fetchData);
+    el.addEventListener('change', fetchData);
+});
+</script>
+
+
+{% endblock %}

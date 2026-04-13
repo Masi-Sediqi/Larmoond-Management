@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content container-fluid">
+        
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h3 class="page-title">{{ page_title }}</h3>
+                    <ul class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'hosting:server_list' %}">Server</a></li>
+                        <li class="breadcrumb-item active">{{ page_title }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Basic Information</h5>
+                            <hr>
+
+                            <div class="mb-3">
+                                <label for="{{ form.server_name.id_for_label }}" class="form-label">Server Name</label>
+                                {{ form.server_name }}
+                                {% if form.server_name.errors %}
+                                    <div class="text-danger small">{{ form.server_name.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                    <div class="text-danger small">{{ form.status.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date</label>
+                                {{ form.start_date }}
+                                {% if form.start_date.errors %}
+                                    <div class="text-danger small">{{ form.start_date.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date</label>
+                                {{ form.end_date }}
+                                {% if form.end_date.errors %}
+                                    <div class="text-danger small">{{ form.end_date.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.price.id_for_label }}" class="form-label">Price</label>
+                                {{ form.price }}
+                                {% if form.price.errors %}
+                                    <div class="text-danger small">{{ form.price.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.ip_address.id_for_label }}" class="form-label">IP Address</label>
+                                {{ form.ip_address }}
+                                {% if form.ip_address.errors %}
+                                    <div class="text-danger small">{{ form.ip_address.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h5>Server Specifications</h5>
+                            <hr>
+
+                            <div class="mb-3">
+                                <label for="{{ form.cpu_cores.id_for_label }}" class="form-label">CPU Cores</label>
+                                {{ form.cpu_cores }}
+                                {% if form.cpu_cores.errors %}
+                                    <div class="text-danger small">{{ form.cpu_cores.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.ram_gb.id_for_label }}" class="form-label">RAM (GB)</label>
+                                {{ form.ram_gb }}
+                                {% if form.ram_gb.errors %}
+                                    <div class="text-danger small">{{ form.ram_gb.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.storage_gb.id_for_label }}" class="form-label">Storage (GB)</label>
+                                {{ form.storage_gb }}
+                                {% if form.storage_gb.errors %}
+                                    <div class="text-danger small">{{ form.storage_gb.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.bandwidth_tb.id_for_label }}" class="form-label">Bandwidth (TB)</label>
+                                {{ form.bandwidth_tb }}
+                                {% if form.bandwidth_tb.errors %}
+                                    <div class="text-danger small">{{ form.bandwidth_tb.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.provider.id_for_label }}" class="form-label">Provider</label>
+                                {{ form.provider }}
+                                {% if form.provider.errors %}
+                                    <div class="text-danger small">{{ form.provider.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.operating_system.id_for_label }}" class="form-label">Operating System</label>
+                                {{ form.operating_system }}
+                                {% if form.operating_system.errors %}
+                                    <div class="text-danger small">{{ form.operating_system.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                                {{ form.notes }}
+                                {% if form.notes.errors %}
+                                    <div class="text-danger small">{{ form.notes.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <a href="{% url 'hosting:server_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

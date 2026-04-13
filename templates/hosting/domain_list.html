@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="page-wrapper">
+    <div class="content container-fluid">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h3 class="page-title">Domain</h3>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="{% url 'hosting:domain_create' %}" class="btn btn-primary">Add Domain</a>
+                </div>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="message-container">
+            {% for message in messages %}
+                <div class="custom-message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Total Domains</h5>
+                        <h3 id="total-domains" >{{ total_domains }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Active Domains</h5>
+                        <h3 id="active-domains" >{{ active_domains }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5>Inactive Domains</h5>
+                        <h3 id="inactive-domains" >{{ inactive_domains }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row">
+
+                    <div class="col-md-3">
+                        <input type="text" id="search" class="form-control" placeholder="Search domain name...">
+                    </div>
+
+                    <div class="col-md-2">
+                        <select id="client" class="form-select">
+                            <option value="">All Clients</option>
+                            {% for item in clients %}
+                                <option value="{{ item.id }}">{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <select id="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <input type="date" id="from_date" class="form-control">
+                    </div>
+
+                    <div class="col-md-2">
+                        <input type="date" id="to_date" class="form-control">
+                    </div>
+
+                    <div class="col-md-1">
+                        <a id="print-link" href="{% url 'hosting:domain_list' %}" target="_blank" class="btn btn-dark w-100">
+                            🖨️
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Domain List</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Domain Name</th>
+                                <th>Client</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Registrar</th>
+                                <th>DNS Provider</th>
+                                <th>Note</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            {% include 'hosting/search_domain.html' %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fetchData() {
+    let search = document.getElementById('search').value;
+    let client = document.getElementById('client').value;
+    let status = document.getElementById('status').value;
+    let from_date = document.getElementById('from_date').value;
+    let to_date = document.getElementById('to_date').value;
+
+    fetch(`?search=${search}&client=${client}&status=${status}&from_date=${from_date}&to_date=${to_date}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('table-body').innerHTML = data.html;
+
+        if (document.getElementById('total-domains')) {
+            document.getElementById('total-domains').innerText = data.total_domains;
+        }
+        if (document.getElementById('active-domains')) {
+            document.getElementById('active-domains').innerText = data.active_domains;
+        }
+        if (document.getElementById('inactive-domains')) {
+            document.getElementById('inactive-domains').innerText = data.inactive_domains;
+        }
+    });
+}
+
+document.querySelectorAll('#search, #client, #status, #from_date, #to_date')
+.forEach(el => {
+    el.addEventListener('keyup', fetchData);
+    el.addEventListener('change', fetchData);
+});
+</script>
+
+{% endblock %}

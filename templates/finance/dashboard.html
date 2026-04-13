@@ -163,7 +163,7 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ item.title }}</td>
-                                <td>{{ item.get_source_display }}</td>
+                                <td>{{ item.source.name|default:"-" }}</td>
                                 <td>{{ item.amount }}</td>
                                 <td>{{ item.currency }}</td>
                                 <td>{{ item.date }}</td>
@@ -202,7 +202,7 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ item.title }}</td>
-                                <td>{{ item.get_category_display }}</td>
+                                <td>{{ item.category.name|default:"-" }}</td>
                                 <td>{{ item.amount }}</td>
                                 <td>{{ item.currency }}</td>
                                 <td>{{ item.date }}</td>

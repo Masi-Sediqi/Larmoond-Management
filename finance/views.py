@@ -378,3 +378,87 @@ def expense_category_delete(request, pk):
     category.delete()
     messages.warning(request, 'Expense category was deleted successfully!')
     return redirect('finance:expense_category_list')
+
+
+
+def income_print(request):
+    incomes = Income.objects.select_related('source').all().order_by('-date', '-id')
+    sources = IncomeSource.objects.filter(is_active=True).order_by('name')
+
+    search = request.GET.get('search')
+    source = request.GET.get('source')
+    currency = request.GET.get('currency')
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+
+    if search:
+        incomes = incomes.filter(title__icontains=search)
+
+    if source:
+        incomes = incomes.filter(source_id=source)
+
+    if currency:
+        incomes = incomes.filter(currency=currency)
+
+    if from_date:
+        incomes = incomes.filter(date__gte=from_date)
+
+    if to_date:
+        incomes = incomes.filter(date__lte=to_date)
+
+    total_afn = incomes.filter(currency='AFN').aggregate(total=Sum('amount'))['total'] or 0
+    total_usd = incomes.filter(currency='USD').aggregate(total=Sum('amount'))['total'] or 0
+
+    context = {
+        'incomes': incomes,
+        'total_afn': total_afn,
+        'total_usd': total_usd,
+        'search': search,
+        'selected_source': source,
+        'selected_currency': currency,
+        'from_date': from_date,
+        'to_date': to_date,
+    }
+    return render(request, 'finance/income_print.html', context)
+
+
+
+def expense_print(request):
+    expenses = Expense.objects.select_related('category').all().order_by('-date', '-id')
+    categories = ExpenseCategory.objects.filter(is_active=True).order_by('name')
+
+    search = request.GET.get('search')
+    category = request.GET.get('category')
+    currency = request.GET.get('currency')
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+
+    if search:
+        expenses = expenses.filter(title__icontains=search)
+
+    if category:
+        expenses = expenses.filter(category_id=category)
+
+    if currency:
+        expenses = expenses.filter(currency=currency)
+
+    if from_date:
+        expenses = expenses.filter(date__gte=from_date)
+
+    if to_date:
+        expenses = expenses.filter(date__lte=to_date)
+
+    total_afn = expenses.filter(currency='AFN').aggregate(total=Sum('amount'))['total'] or 0
+    total_usd = expenses.filter(currency='USD').aggregate(total=Sum('amount'))['total'] or 0
+
+    context = {
+        'expenses': expenses,
+        'total_afn': total_afn,
+        'total_usd': total_usd,
+        'search': search,
+        'selected_category': category,
+        'selected_currency': currency,
+        'from_date': from_date,
+        'to_date': to_date,
+    }
+    return render(request, 'finance/expense_print.html', context)

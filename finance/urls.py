@@ -18,6 +18,8 @@ urlpatterns = [
     path('expenses/<int:pk>/delete/', views.expense_delete, name='expense_delete'),
 
     path('finance/dashboard/', views.finance_dashboard, name='dashboard'),
+    path('income/print/', views.income_print, name='income_print'),
+    path('expense/print/', views.expense_print, name='expense_print'),
 
     # income sources
     path('income-sources/', views.income_source_list, name='income_source_list'),
